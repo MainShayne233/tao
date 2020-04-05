@@ -1,10 +1,11 @@
-module Data.Board exposing (Board, getCell, mapCells, new)
+module Data.Board exposing (Board, getCell, new)
 
 import Data.Cell as Cell exposing (Cell)
+import Dict exposing (Dict)
 
 
 type alias BoardData =
-    { cells : List Cell
+    { cells : Dict ( Int, Int ) Cell
     }
 
 
@@ -12,37 +13,26 @@ type Board
     = Board BoardData
 
 
-new : List Cell -> Board
-new initCells =
-    Board (BoardData initCells)
-
-
-mapCells : (Cell -> a) -> Board -> List a
-mapCells fun board =
-    board
-        |> cells
-        |> List.map fun
+new : List ( Int, Int ) -> Board
+new coordinates =
+    Board (BoardData (initCells coordinates))
 
 
 getCell : ( Int, Int ) -> Board -> Maybe Cell
 getCell coordinate board =
-    let
-        cellToFind =
-            Cell.fromCoordinate coordinate
-    in
-    case List.filter (\cell -> cell == cellToFind) (cells board) of
-        cell :: rest ->
-            Just cell
-
-        [] ->
-            Nothing
+    Dict.get coordinate (cells board)
 
 
 
 ---- PRIVATE ----
 
 
-cells : Board -> List Cell
+initCells : List ( Int, Int ) -> Dict ( Int, Int ) Cell
+initCells coordinates =
+    Dict.fromList (List.map (\coordinate -> ( coordinate, Cell.new )) coordinates)
+
+
+cells : Board -> Dict ( Int, Int ) Cell
 cells board =
     let
         boardData =

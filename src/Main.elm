@@ -15,21 +15,21 @@ type alias Model =
     { board : Board }
 
 
-notInExcludedCells : Cell -> Bool
-notInExcludedCells cell =
-    List.member cell
-        [ Cell.new 0 0
-        , Cell.new 0 1
-        , Cell.new 1 0
-        , Cell.new 0 9
-        , Cell.new 0 10
-        , Cell.new 1 10
-        , Cell.new 9 0
-        , Cell.new 9 10
-        , Cell.new 10 0
-        , Cell.new 10 1
-        , Cell.new 10 9
-        , Cell.new 10 10
+notInExcludedCoordinates : ( Int, Int ) -> Bool
+notInExcludedCoordinates coordinate =
+    List.member coordinate
+        [ ( 0, 0 )
+        , ( 0, 1 )
+        , ( 0, 9 )
+        , ( 0, 10 )
+        , ( 1, 0 )
+        , ( 1, 10 )
+        , ( 9, 0 )
+        , ( 9, 10 )
+        , ( 10, 0 )
+        , ( 10, 1 )
+        , ( 10, 9 )
+        , ( 10, 10 )
         ]
         == False
 
@@ -43,18 +43,14 @@ fullGridCoordinates =
         (List.range 0 10)
 
 
-initCells : List Cell
-initCells =
-    let
-        cells =
-            List.map Cell.fromCoordinate fullGridCoordinates
-    in
-    List.filter notInExcludedCells cells
+initCoordinates : List ( Int, Int )
+initCoordinates =
+    List.filter notInExcludedCoordinates fullGridCoordinates
 
 
 initBoard : Board
 initBoard =
-    Board.new initCells
+    Board.new initCoordinates
 
 
 init : ( Model, Cmd Msg )

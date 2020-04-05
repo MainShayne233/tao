@@ -4,7 +4,7 @@ import Browser
 import Data.Board as Board exposing (Board)
 import Data.Cell as Cell exposing (Cell)
 import Html exposing (Html, div, h1, img, text)
-import Html.Attributes exposing (src)
+import Html.Attributes exposing (class, id, src, style)
 
 
 
@@ -21,9 +21,9 @@ notInExcludedCells cell =
         [ Cell.new 0 0
         , Cell.new 0 1
         , Cell.new 1 0
+        , Cell.new 0 9
         , Cell.new 0 10
-        , Cell.new 0 11
-        , Cell.new 1 11
+        , Cell.new 1 10
         , Cell.new 9 0
         , Cell.new 9 10
         , Cell.new 10 0
@@ -34,17 +34,22 @@ notInExcludedCells cell =
         == False
 
 
+fullGridCoordinates : List ( Int, Int )
+fullGridCoordinates =
+    List.concatMap
+        (\x ->
+            List.map (\y -> ( x, y )) (List.range 0 10)
+        )
+        (List.range 0 10)
+
+
 initCells : List Cell
 initCells =
     let
-        grid =
-            List.concatMap
-                (\x ->
-                    List.map (\y -> Cell.new x y) (List.range 0 10)
-                )
-                (List.range 0 10)
+        cells =
+            List.map Cell.fromCoordinate fullGridCoordinates
     in
-    List.filter notInExcludedCells grid
+    List.filter notInExcludedCells cells
 
 
 initBoard : Board
@@ -79,17 +84,33 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ viewBoard model
+        [ h1 [] [ text "TAO" ]
+        , viewBoard model
         ]
 
 
 viewBoard : Model -> Html Msg
 viewBoard model =
-    div [] []
+    div [ id "board" ] (viewCells model)
 
 
+viewCells : Model -> List (Html Msg)
+viewCells model =
+    fullGridCoordinates
+        |> List.map
+            (\coordinate ->
+                case Board.getCell coordinate model.board of
+                    Just cell ->
+                        viewCell cell
 
----- PROGRAM ----
+                    Nothing ->
+                        div [] []
+            )
+
+
+viewCell : Cell -> Html Msg
+viewCell cell =
+    div ([] ++ [ class "cell" ]) []
 
 
 main : Program () Model Msg

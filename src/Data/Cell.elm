@@ -1,4 +1,4 @@
-module Data.Cell exposing (Cell, new)
+module Data.Cell exposing (Cell, fromCoordinate, new)
 
 
 type alias CellData =
@@ -14,3 +14,8 @@ type Cell
 new : Int -> Int -> Cell
 new xVal yVal =
     Cell (CellData xVal yVal)
+
+
+fromCoordinate : ( Int, Int ) -> Cell
+fromCoordinate ( xVal, yVal ) =
+    new xVal yVal

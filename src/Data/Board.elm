@@ -1,11 +1,18 @@
-module Data.Board exposing (Board, getCell, new)
+module Data.Board exposing (Board, getCell, instantiatePiece, new)
 
 import Data.Cell as Cell exposing (Cell)
+import Data.PieceClass as PieceClass exposing (PieceClass)
+import Data.PieceInstance as PieceInstance exposing (PieceInstance)
+import Data.Player as Player exposing (Player)
 import Dict exposing (Dict)
 
 
+type alias CellTable =
+    Dict ( Int, Int ) Cell
+
+
 type alias BoardData =
-    { cells : Dict ( Int, Int ) Cell
+    { cells : CellTable
     }
 
 
@@ -23,16 +30,46 @@ getCell coordinate board =
     Dict.get coordinate (cells board)
 
 
+instantiatePiece : ( Int, Int ) -> PieceClass -> Player -> Board -> Board
+instantiatePiece coordinate pieceClass player board =
+    let
+        boardCells =
+            cells board
+    in
+    case Dict.get coordinate boardCells of
+        Just cell ->
+            let
+                updatedCell =
+                    Cell.setOccupied (PieceInstance.new pieceClass player) cell
+
+                updatedCells =
+                    Dict.insert coordinate updatedCell boardCells
+            in
+            setCells updatedCells board
+
+        Nothing ->
+            board
+
+
 
 ---- PRIVATE ----
 
 
-initCells : List ( Int, Int ) -> Dict ( Int, Int ) Cell
+setCells : CellTable -> Board -> Board
+setCells newCells board =
+    let
+        boardData =
+            data board
+    in
+    Board { boardData | cells = newCells }
+
+
+initCells : List ( Int, Int ) -> CellTable
 initCells coordinates =
     Dict.fromList (List.map (\coordinate -> ( coordinate, Cell.new )) coordinates)
 
 
-cells : Board -> Dict ( Int, Int ) Cell
+cells : Board -> CellTable
 cells board =
     let
         boardData =

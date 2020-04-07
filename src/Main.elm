@@ -6,8 +6,10 @@ import Data.Cell as Cell exposing (Cell, CellState)
 import Data.PieceClass as PieceClass exposing (PieceClass)
 import Data.PieceInstance as PieceInstance exposing (PieceInstance)
 import Data.Player as Player exposing (Player)
-import Html exposing (Html, div, h1, img, p, text)
+import Data.Turn as Turn exposing (Turn)
+import Html exposing (Html, button, div, h1, img, p, text)
 import Html.Attributes exposing (class, id, src, style)
+import Html.Events exposing (onClick)
 
 
 
@@ -15,7 +17,7 @@ import Html.Attributes exposing (class, id, src, style)
 
 
 type alias Model =
-    { board : Board }
+    { board : Board, turns : List Turn }
 
 
 notInExcludedCoordinates : ( Int, Int ) -> Bool
@@ -74,9 +76,23 @@ placePiece ( coordinate, pieceClass, player ) board =
     Board.instantiatePiece coordinate pieceClass player board
 
 
+firstPlayer : Player
+firstPlayer =
+    Player.Red
+
+
+initTurns : List Turn
+initTurns =
+    let
+        turn =
+            Turn.new firstPlayer
+    in
+    [ turn ]
+
+
 init : ( Model, Cmd Msg )
 init =
-    ( { board = initBoard }
+    ( { board = initBoard, turns = initTurns }
     , Cmd.none
     )
 
@@ -87,11 +103,17 @@ init =
 
 type Msg
     = NoOp
+    | CellClicked ( Int, Int )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        NoOp ->
+            ( model, Cmd.none )
+
+        CellClicked coordinate ->
+            ( model, Cmd.none )
 
 
 
@@ -102,8 +124,25 @@ view : Model -> Html Msg
 view model =
     div [ id "app" ]
         [ h1 [] [ text "TAO" ]
-        , viewBoard model
+        , div [ id "game-container" ]
+            [ viewGameInfo model, viewBoard model ]
         ]
+
+
+viewGameInfo : Model -> Html Msg
+viewGameInfo model =
+    case List.head model.turns of
+        Just turn ->
+            let
+                currentPlayerLabel =
+                    turn |> Turn.player |> Player.toString
+            in
+            div [ id "game-info" ]
+                [ p [] [ text (currentPlayerLabel ++ "'s turn") ]
+                ]
+
+        Nothing ->
+            div [] []
 
 
 viewBoard : Model -> Html Msg
@@ -126,8 +165,11 @@ viewCells model =
 
 
 viewCell : Cell -> ( Int, Int ) -> Html Msg
-viewCell cell ( xVal, yVal ) =
+viewCell cell coordinate =
     let
+        ( xVal, yVal ) =
+            coordinate
+
         cellContent =
             case Cell.state cell of
                 Cell.Unoccupied ->
@@ -136,7 +178,7 @@ viewCell cell ( xVal, yVal ) =
                 Cell.Occupied pieceInstance ->
                     viewPieceInstance pieceInstance
     in
-    div ([] ++ [ class "cell tooltip" ])
+    button [ class "cell tooltip", onClick (CellClicked coordinate) ]
         [ cellContent
         , p [ class "tooltiptext" ] [ text (String.fromInt xVal ++ " : " ++ String.fromInt yVal) ]
         ]

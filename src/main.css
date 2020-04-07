@@ -32,7 +32,18 @@ img {
   align-items: center;
 }
 
+#game-container {
+    display: grid;
+    grid-template-areas:
+        "game-info board other";
+}
+
+#game-info {
+    grid-area: game-info;
+}
+
 #board {
+  grid-area: board;
   display: grid;
   grid-template-columns: repeat(11, 8vmin);
   grid-template-rows: repeat(11, 8vmin);

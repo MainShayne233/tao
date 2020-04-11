@@ -34,6 +34,22 @@ player turn =
 
 
 
+-- TODO we left off here, should use this over in Main.viewPhaseInfo
+
+
+hasAlreadyDonePhase : Turn -> Phase -> Bool
+hasAlreadyDonePhase turn phase =
+    let
+        turnData =
+            data turn
+
+        actions =
+            List.map Tuple.first turnData.actions
+    in
+    List.member phase actions
+
+
+
 ---- PRIVATE ----
 
 

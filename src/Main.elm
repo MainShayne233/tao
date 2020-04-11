@@ -6,9 +6,9 @@ import Data.Cell as Cell exposing (Cell, CellState)
 import Data.PieceClass as PieceClass exposing (PieceClass)
 import Data.PieceInstance as PieceInstance exposing (PieceInstance)
 import Data.Player as Player exposing (Player)
-import Data.Turn as Turn exposing (Turn)
-import Html exposing (Html, button, div, h1, img, p, text)
-import Html.Attributes exposing (class, id, src, style)
+import Data.Turn as Turn exposing (Phase(..), Turn)
+import Html exposing (Html, button, div, h1, img, input, p, text)
+import Html.Attributes exposing (class, id, src, style, type_)
 import Html.Events exposing (onClick)
 
 
@@ -17,7 +17,12 @@ import Html.Events exposing (onClick)
 
 
 type alias Model =
-    { board : Board, turns : List Turn }
+    { board : Board
+    , pastTurns : List Turn
+    , currentTurn : Turn
+    , selectedCell : Maybe ( Int, Int )
+    , phase : Phase
+    }
 
 
 notInExcludedCoordinates : ( Int, Int ) -> Bool
@@ -81,18 +86,9 @@ firstPlayer =
     Player.Red
 
 
-initTurns : List Turn
-initTurns =
-    let
-        turn =
-            Turn.new firstPlayer
-    in
-    [ turn ]
-
-
 init : ( Model, Cmd Msg )
 init =
-    ( { board = initBoard, turns = initTurns }
+    ( { board = initBoard, pastTurns = [], selectedCell = Nothing, phase = Walk, currentTurn = Turn.new firstPlayer }
     , Cmd.none
     )
 
@@ -113,7 +109,7 @@ update msg model =
             ( model, Cmd.none )
 
         CellClicked coordinate ->
-            ( model, Cmd.none )
+            ( { model | selectedCell = Just coordinate }, Cmd.none )
 
 
 
@@ -125,24 +121,39 @@ view model =
     div [ id "app" ]
         [ h1 [] [ text "TAO" ]
         , div [ id "game-container" ]
-            [ viewGameInfo model, viewBoard model ]
+            [ viewGameInfo model, viewPhaseInfo model, viewBoard model ]
         ]
 
 
 viewGameInfo : Model -> Html Msg
 viewGameInfo model =
-    case List.head model.turns of
-        Just turn ->
-            let
-                currentPlayerLabel =
-                    turn |> Turn.player |> Player.toString
-            in
-            div [ id "game-info" ]
-                [ p [] [ text (currentPlayerLabel ++ "'s turn") ]
-                ]
+    let
+        currentPlayerLabel =
+            model.currentTurn |> Turn.player |> Player.toString
+    in
+    div [ id "game-info" ]
+        [ p [] [ text (currentPlayerLabel ++ "'s turn") ]
+        ]
 
-        Nothing ->
-            div [] []
+
+viewPhaseInfo : Model -> Html Msg
+viewPhaseInfo model =
+    div []
+        [ Html.label []
+            [ text "Walk"
+            , input [ type_ "radio" ] []
+            ]
+        , Html.label
+            []
+            [ text "Attack"
+            , input [ type_ "radio" ] []
+            ]
+        , Html.label
+            []
+            [ text "Change Direction"
+            , input [ type_ "radio" ] []
+            ]
+        ]
 
 
 viewBoard : Model -> Html Msg
